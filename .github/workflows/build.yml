@@ -1,0 +1,40 @@
+name: Move files and deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write  
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Move files to worldtime folder
+        run: |
+          rm -rf worldtime
+          mkdir worldtime
+          shopt -s extglob
+          mv !(worldtime|.git|.github) worldtime/
+
+      - name: Commit and push to gh-pages
+        run: |
+          git checkout gh-pages || git checkout --orphan gh-pages
+          # git reset --hard
+          # git clean -fd
+          git add .
+          git commit -m "Deploy worldtime files"
+          git push origin gh-pages --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
